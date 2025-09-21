@@ -95,15 +95,9 @@ health-report-engine/
 
 │── README.md
 
-│── requirements.txt
-
 │── data/
 
 │   └── health_report_sample.csv
-
-│── notebooks/
-
-│   └── demo.ipynb
 
 │── src/
 
@@ -116,3 +110,5 @@ health-report-engine/
 │   └── demo-video.mp4
 
 │── slides/
+
+|   └── https://www.canva.com/design/DAGzhSY2YlA/x4AdccjrgWt5ELj94gTQDw/edit?utm_content=DAGzhSY2YlA&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton 
