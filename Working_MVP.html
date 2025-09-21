@@ -1,0 +1,846 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Health Report Checker — Quick Symptom & Referral Helper</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@700&display=swap" rel="stylesheet">
+
+  <style>
+    .designer-card {
+  position: fixed;       /* stays in the corner even on scroll */
+  bottom: 20px;          /* distance from bottom */
+  right: 20px;           /* distance from right */
+  background-color: #000; /* black card */
+  color: #fff;           /* white text */
+  padding: 8px 15px;     /* space inside card */
+  border-radius: 8px;    /* rounded corners */
+  font-size: 14px;       /* text size */
+  font-weight: bold;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3); /* subtle shadow */
+  cursor: default;
+  z-index: 1000;         /* on top of other elements */
+}
+
+    :root {
+      --bg:#f6f8fb;
+      --card:#ffffff;
+      --accent:#0b5fff;
+      --muted:#6b7280;
+      --text:#0f172a;
+      --success:#10b981;
+      --danger:#ef4444;
+      --warning:#f59e0b;
+    }
+    body {
+    /* Two layers: gradient overlay (soft teal) + your green PNG */
+    background-image: 
+        linear-gradient(120deg, rgba(224,247,250,0.2), rgba(255,255,255,0.1), rgba(224,247,250,0.2)),
+        url('images/bgrnd.png');
+    background-size: 400% 400%, cover;  /* gradient animates, image covers screen */
+    background-attachment: fixed, fixed;
+    background-position: center, center;
+    background-repeat: no-repeat, no-repeat;
+    animation: gradientShift 20s ease infinite;
+}
+
+
+    
+    .wrap {
+      max-width:900px;
+      margin:28px auto;
+      padding:20px;
+    }
+    header { display:flex; gap:16px; align-items:center; }
+    h1, h2, h3 { margin:0; }
+    /* Modern medical dashboard title */
+h1.site-title {
+    text-align: center;
+    font-size: 2rem;
+    font-weight: 700;
+    font-family: 'Roboto', sans-serif;
+    background: linear-gradient(90deg, #0b5fff, #10b981);
+    -webkit-background-clip: text;
+    -moz-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    letter-spacing: 1px;
+    margin-bottom: 4px;
+    /* animation removed */
+}
+
+
+/* Glow animation for title */
+@keyframes glow {
+    0%, 100% { text-shadow: 0 0 4px #0b5fff, 0 0 8px #10b981; }
+    50% { text-shadow: 0 0 8px #0b5fff, 0 0 16px #10b981; }
+}
+
+    h1 { font-size:20px; }
+    p.lead { margin:6px 0 20px; color: var(--muted); }
+    .card {
+    background: linear-gradient(135deg, #e0f7fa, #ffffff); /* soft teal → white */
+    border-radius: 14px; /* slightly more rounded */
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08); /* soft shadow */
+    padding: 20px;
+    margin-bottom: 18px;
+    transition: transform 1s ease, box-shadow 0.3s ease;
+}
+.pale-yellow-card {
+    background: linear-gradient(135deg, #fff8dc, #ffffff);
+    border-radius: 14px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 20px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.pale-yellow-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
+}
+
+
+.card:hover {
+    transform: translateY(-4px); /* lift effect on hover */
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12); /* stronger shadow on hover */
+}
+.upload-card {
+    background: linear-gradient(135deg, #fff8f0, #ffffff); /* soft warm color */
+    border-radius: 14px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+    padding: 20px;
+    margin-bottom: 18px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.upload-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.12);
+}
+
+.upload-card h2 {
+    text-align: center;
+    margin-bottom: 12px;
+    font-weight: 600;
+}
+.upload-controls {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-top: 12px;
+    align-items: center;
+}
+
+.upload-controls input[type="file"] {
+    border: 2px dashed #0b5fff; /* dashed border for modern feel */
+    border-radius: 12px;
+    padding: 12px 16px;
+    background: #f0faff; /* subtle background */
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s;
+}
+
+.upload-controls input[type="file"]:hover {
+    background: #e0f7fa;
+    border-color: #10b981;
+}
+
+.upload-controls button {
+    background: #0b5fff;  /* blue accent */
+    color: white;
+    border: none;
+    padding: 12px 18px;
+    border-radius: 12px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: transform 0.2s, box-shadow 0.2s, opacity 0.2s;
+}
+
+.upload-controls button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(11, 95, 255, 0.3);
+    opacity: 0.95;
+}
+
+#uploadStatus {
+    color: var(--muted);
+    text-align: center;
+    margin-top: 8px;
+}
+
+#fileOutput {
+    margin-top: 8px;
+    border-radius: 8px;
+    background: #f3f4f6;
+    padding: 12px;
+    min-height: 60px;
+    white-space: pre-wrap;
+    overflow-x: auto;
+}
+
+
+    label {
+      display:block;
+      font-weight:600;
+      margin:8px 0 6px;
+    }
+    .row { display:flex; gap:12px; flex-wrap:wrap; }
+    input[type="number"], input[type="text"], select {
+      padding:8px 10px;
+      border:1px solid #e6e9ef;
+      border-radius:8px;
+      min-width:140px;
+    }
+    .param { flex:1 1 140px; }
+    button {
+      background: var(--accent);
+      color:white;
+      border:none;
+      padding:10px 14px;
+      border-radius:8px;
+      cursor:pointer;
+      transition:0.2s;
+    }
+    button:hover { opacity:0.9; }
+    .results { margin-top:12px; }
+    .result-item {
+      border-left:4px solid #e6e9ef;
+      padding:10px 12px;
+      border-radius:6px;
+      margin-bottom:8px;
+      background:#fbfdff;
+    }
+    .status-normal { border-color: var(--success); }
+    .status-high { border-color: var(--danger); }
+    .status-low { border-color: var(--warning); }
+    table { width:100%; border-collapse:collapse; margin-top:8px; }
+    th, td { padding:8px; border-bottom:1px solid #eef2f7; text-align:left; }
+    small { color:var(--muted); }
+    .actions { display:flex; gap:8px; align-items:center; margin-top:12px; flex-wrap:wrap; }
+    pre#fileOutput { background:#f3f4f6; padding:10px; border-radius:6px; min-height:60px; white-space: pre-wrap; overflow-x:auto; }
+    @media (max-width:640px) { .row { flex-direction:column; } .param { min-width:unset; } }
+  </style>
+</head>
+<body>
+<h1 class="site-title">🩺 Health Dev</h1>
+
+
+<section class="card upload-card">
+  <h2>Upload Health Report</h2>
+  <div class="upload-controls">
+   <input type="file" id="reportFile" accept=".pdf,image/*,.csv" aria-label="Upload report file" />
+
+    <button type="button" onclick="processFile()">Upload & Extract</button>
+  </div>
+  <p id="uploadStatus">Select an image or PDF file</p>
+  <pre id="fileOutput"></pre>
+</section>
+
+
+  <hr>
+
+  <div class="wrap">
+    <header>
+     <div class="card pale-yellow-card">
+
+  <svg width="36" height="36" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M12 2v20M2 12h20" stroke="#0b5fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+  </svg>
+  <div>
+          <h1>Health Report Checker</h1>
+          <p class="lead"> values →  status (low/normal/high), typical symptoms and suggested specialist.</p>
+        </div>
+      </div>
+    </header>
+
+    <section class="card" style="background-color:#f0ffff;">
+      <h2>Patient & Report Details</h2>
+      <div class="row">
+        <div class="param">
+          <label for="name">Name</label>
+          <input id="name" type="text" placeholder="Patient name (optional)" />
+        </div>
+        <div class="param">
+          <label for="age">Age</label>
+          <input id="age" type="number" min="0" placeholder="Years" />
+        </div>
+        <div class="param">
+          <label for="sex">Sex</label>
+          <select id="sex">
+            <option value="unspecified">Unspecified</option>
+            <option value="male">Male</option>
+            <option value="female">Female</option>
+          </select>
+        </div>
+      </div>
+
+      <hr style="margin:35px 0;" />
+
+      <h3>Enter lab values (use units shown)</h3>
+      <small>Leave blank if unavailable. Uses general adult reference ranges (educational only).</small>
+
+      <div style="margin-top:10px">
+        <div class="row">
+          <div class="param"><label>Hemoglobin (g/dL)</label><input id="hb" type="number" step="0.1" placeholder="13.5" /></div>
+          <div class="param"><label>WBC (10^9/L)</label><input id="wbc" type="number" step="0.1" placeholder="7.2" /></div>
+          <div class="param"><label>Platelets (10^9/L)</label><input id="plt" type="number" step="1" placeholder="250" /></div>
+        </div>
+        <div class="row" style="margin-top:8px">
+          <div class="param"><label>Fasting Glucose (mg/dL)</label><input id="glu" type="number" step="1" placeholder="95" /></div>
+          <div class="param"><label>TSH (mIU/L)</label><input id="tsh" type="number" step="0.01" placeholder="2.5" /></div>
+          <div class="param"><label>LDL Cholesterol (mg/dL)</label><input id="ldl" type="number" step="1" placeholder="110" /></div>
+        </div>
+        <div class="row" style="margin-top:8px">
+          <div class="param"><label>Serum Creatinine (mg/dL)</label><input id="cr" type="number" step="0.01" placeholder="0.9" /></div>
+          <div class="param"><label>C-reactive protein (mg/L)</label><input id="crp" type="number" step="0.1" placeholder="2" /></div>
+          <div class="param"><label>Custom (name:value)</label><input id="custom" type="text" placeholder="e.g. ALT:45" /></div>
+        </div>
+
+        <div class="actions">
+          <button id="check">Check Report</button>
+          <button id="clear" style="background:#e6e9ef;color:#0b1220">Clear</button>
+          <button id="download" style="background:#0b6fff80">Download Results (JSON)</button>
+        </div>
+        <div class="row" style="margin-top:8px">
+  <div class="param"><label>HDL (mg/dL)</label><input id="hdl" type="number" step="1" placeholder="50" /></div>
+  <div class="param"><label>Triglycerides (mg/dL)</label><input id="tg" type="number" step="1" placeholder="120" /></div>
+  <div class="param"><label>Bilirubin (mg/dL)</label><input id="bilirubin" type="number" step="0.1" placeholder="0.8" /></div>
+</div>
+<div class="row" style="margin-top:8px">
+  <div class="param"><label>Potassium (mmol/L)</label><input id="potassium" type="number" step="0.1" placeholder="4.0" /></div>
+  <div class="param"><label>Calcium (mg/dL)</label><input id="calcium" type="number" step="0.1" placeholder="9.2" /></div>
+  <div class="param"><label>Vitamin D (ng/mL)</label><input id="vitamind" type="number" step="1" placeholder="30" /></div>
+</div>
+<div class="row" style="margin-top:8px">
+  <div class="param"><label>Vitamin B12 (pg/mL)</label><input id="b12" type="number" step="1" placeholder="400" /></div>
+  <div class="param"><label>Ferritin (ng/mL)</label><input id="ferritin" type="number" step="1" placeholder="80" /></div>
+  <div class="param"><label>Folate (ng/mL)</label><input id="folate" type="number" step="0.1" placeholder="8" /></div>
+</div>
+<div class="row" style="margin-top:8px">
+  <div class="param"><label>Magnesium (mg/dL)</label><input id="magnesium" type="number" step="0.1" placeholder="2.0" /></div>
+</div>
+
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Results</h2>
+      <div id="results" class="results">
+        <p class="lead">No report checked yet.</p>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Notes</h2>
+      <ul>
+        <li>This tool uses <strong>general adult reference ranges</strong>. Real ranges differ by lab method, age, pregnancy, and comorbidities.</li>
+        <li>It only suggests possible symptoms and the type of specialist to consult. <strong>Not a diagnostic tool.</strong></li>
+        <li>For critical or abnormal values, contact a doctor or emergency services immediately.</li>
+      </ul>
+    </section>
+
+    <footer style="text-align:center;color:var(--muted);font-size:13px;margin-top:8px">
+      Made for rapid prototyping • Customize ranges & mappings in the code
+    </footer>
+  </div>
+
+  <!-- JS Logic -->
+  
+  <script>
+    const REFERENCE = {
+      Hb: {name:'Hemoglobin', unit:'g/dL', low:13.5, high:17.5, sexAdjust:{female:{low:12,high:15.5}}, symptoms:{low:['Fatigue','Pallor','Dizziness'],high:['Headache','Flushed face']}, doctor:'Hematologist / GP'},
+      WBC: {name:'WBC', unit:'10^9/L', low:4, high:11, symptoms:{low:['Infections risk'],high:['Fever','Inflammation']}, doctor:'GP / Infectious Disease'},
+      PLT: {name:'Platelets', unit:'10^9/L', low:150, high:450, symptoms:{low:['Bruising','Bleeding gums'],high:['Thrombosis risk']}, doctor:'Hematologist'},
+      GLU: {name:'Fasting Glucose', unit:'mg/dL', low:70, high:99, symptoms:{low:['Sweating','Shakiness'],high:['Polyuria','Fatigue']}, doctor:'Endocrinologist'},
+      TSH: {name:'TSH', unit:'mIU/L', low:0.4, high:4, symptoms:{low:['Palpitations'],high:['Fatigue','Weight gain']}, doctor:'Endocrinologist'},
+      CR: {name:'Serum Creatinine', unit:'mg/dL', low:0.6, high:1.3, symptoms:{high:['Reduced urine','Fatigue']}, doctor:'Nephrologist'},
+            LDL: {name:'LDL Cholesterol', unit:'mg/dL', low:0, high:100, symptoms:{high:['Atherosclerosis risk']}, doctor:'Cardiologist'},
+
+      HDL: {name:'HDL Cholesterol', unit:'mg/dL', low:40, high:Infinity, symptoms:{low:['Higher risk of heart disease']}, doctor:'Cardiologist'},
+      TG: {name:'Triglycerides', unit:'mg/dL', low:0, high:150, symptoms:{high:['Pancreatitis risk','Metabolic syndrome']}, doctor:'Cardiologist'},
+      Bilirubin: {name:'Bilirubin', unit:'mg/dL', low:0.2, high:1.2, symptoms:{high:['Yellow eyes','Yellow skin','Dark urine']}, doctor:'Gastroenterologist'},
+      Urea: {name:'Urea', unit:'mg/dL', low:15, high:40, symptoms:{high:['Swelling','Confusion','Fatigue']}, doctor:'Nephrologist'},
+      Potassium: {name:'Potassium', unit:'mmol/L', low:3.5, high:5.0, symptoms:{low:['Muscle weakness','Cramps']}, doctor:'Nephrologist'},
+      Calcium: {name:'Calcium', unit:'mg/dL', low:8.5, high:10.5, symptoms:{low:['Muscle cramps','Tingling']}, doctor:'Endocrinologist'},
+      VitaminD: {name:'Vitamin D', unit:'ng/mL', low:20, high:80, symptoms:{low:['Bone pain','Muscle weakness']}, doctor:'Endocrinologist'},
+      B12: {name:'Vitamin B12', unit:'pg/mL', low:200, high:900, symptoms:{low:['Anemia','Numbness','Fatigue']}, doctor:'Hematologist'},
+      Ferritin: {name:'Ferritin', unit:'ng/mL', low:30, high:400, symptoms:{low:['Iron deficiency','Fatigue']}, doctor:'Hematologist'},
+      Folate: {name:'Folic Acid', unit:'ng/mL', low:3, high:17, symptoms:{low:['Mouth sores','Weakness']}, doctor:'Hematologist'},
+      Magnesium: {name:'Magnesium', unit:'mg/dL', low:1.6, high:2.6, symptoms:{low:['Cramps','Arrhythmia']}, doctor:'GP'},
+
+      CRP: {name:'C-reactive protein', unit:'mg/L', low:0, high:5, symptoms:{high:['Fever','Inflammation']}, doctor:'GP / Rheumatologist'}
+    };
+const DEFICIENCY_CONDITIONS = [
+  { keys: ['Hb'], description: 'Low hemoglobin may indicate anemia, chronic disease, or blood loss.' },
+  { keys: ['WBC'], description: 'Abnormal WBC may suggest infection, inflammation, or bone marrow disorders.' },
+  { keys: ['PLT'], description: 'Abnormal platelet count may indicate bleeding disorder, thrombocytopenia, or thrombocytosis.' },
+  { keys: ['Hb','WBC','PLT'], description: 'Combination of low Hb, WBC, and platelets may indicate aplastic anemia, bone marrow suppression, or severe nutritional deficiency.' },
+  { keys: ['Hb','Ferritin','B12','Folate'], description: 'Deficiencies in Hb, Ferritin, B12, or Folate suggest iron deficiency anemia or megaloblastic anemia.' },
+  { keys: ['GLU'], description: 'Abnormal fasting glucose may indicate diabetes or impaired glucose tolerance.' },
+  { keys: ['TSH'], description: 'Abnormal TSH may indicate hypothyroidism or hyperthyroidism.' },
+  { keys: ['GLU','LDL','TG'], description: 'Combination of abnormal glucose, LDL, or triglycerides may indicate metabolic syndrome or cardiovascular risk.' },
+  { keys: ['LDL','HDL','TG'], description: 'Abnormal lipid profile may indicate dyslipidemia or increased risk of atherosclerosis.' },
+  { keys: ['CR','Urea','Potassium'], description: 'Abnormal creatinine, urea, or potassium may indicate kidney dysfunction or electrolyte imbalance.' },
+  { keys: ['Bilirubin'], description: 'High bilirubin may indicate liver dysfunction, hepatitis, or bile duct obstruction.' },
+  { keys: ['VitaminD','Calcium','Magnesium'], description: 'Low vitamin D, calcium, or magnesium may indicate bone mineralization issues or risk of osteoporosis.' },
+  { keys: ['B12','Folate'], description: 'Low B12 or Folate may indicate megaloblastic anemia or nutritional deficiencies.' },
+  { keys: ['CRP'], description: 'High CRP suggests inflammation, infection, or autoimmune response.' }
+];
+function generateConclusion(report){
+  const findings = [];
+  const readings = report.readings || {};
+
+  DEFICIENCY_CONDITIONS.forEach(cond=>{
+    const present = cond.keys.every(k => readings[k] && readings[k].present && readings[k].status !== 'normal');
+    if(present){
+      findings.push(cond.description);
+    }
+  });
+
+  // Limit to top 4 conclusions
+  return findings.slice(0,4);
+}
+
+    function parseCustom(str){
+      if(!str) return null;
+      const parts = str.split(':');
+      if(parts.length<2) return null;
+      const key = parts[0].trim();
+      const val = parseFloat(parts[1]);
+      if(isNaN(val)) return null;
+      return {key,val};
+    }
+
+    function checkValue(key, value, sex){
+      const ref = REFERENCE[key];
+      if(!ref) return null;
+      let low = ref.low, high = ref.high;
+      if(sex && ref.sexAdjust && ref.sexAdjust[sex]){ low = ref.sexAdjust[sex].low; high = ref.sexAdjust[sex].high; }
+      if(value===null || isNaN(value)) return {present:false};
+      let status='normal';
+      if(value<low) status='low';
+      else if(value>high) status='high';
+      return {present:true,key,name:ref.name,unit:ref.unit,value,low,high,status,symptoms:ref.symptoms,doctor:ref.doctor};
+    }
+
+    function renderResults(report){
+      const el = document.getElementById('results');
+      el.innerHTML='';
+      if(Object.keys(report.readings||{}).length===0){ el.innerHTML='<p class="lead">No report checked yet.</p>'; return; }
+
+      const summary = document.createElement('div');
+      summary.innerHTML = `<strong>Patient:</strong> ${report.patient||'—'} &nbsp; <small>Age: ${report.age||'—'} Sex: ${report.sex||'—'}</small>`;
+      el.appendChild(summary);
+
+      const table = document.createElement('table');
+      table.innerHTML='<thead><tr><th>Test</th><th>Value</th><th>Status</th><th>Normal Range</th><th>Symptoms (example)</th><th>Suggested Specialist</th></tr></thead>';
+      const tbody = document.createElement('tbody');
+
+      for(const k of Object.keys(report.readings)){
+        const r = report.readings[k];
+        if(!r.present) continue;
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${r.name}${r.unit?` (${r.unit})`:''}</td>
+          <td>${r.value}</td>
+          <td style="font-weight:700;color:${r.status==='normal'? '#047857': r.status==='high'? '#b91c1c':'#a16207'}">${r.status}</td>
+          <td>${r.low} - ${r.high}</td>
+          <td>${r.symptoms && r.symptoms[r.status]? r.symptoms[r.status].slice(0,3).join(', '):'—'}</td>
+          <td>${r.doctor}</td>
+        `;
+        tbody.appendChild(tr);
+      }
+
+      table.appendChild(tbody);
+      el.appendChild(table);
+
+// --- 2.5. Conclusion / Possible Diseases ---
+const conclusion = generateConclusion(report);
+if(conclusion && conclusion.length){
+  const conclDiv = document.createElement('div');
+  conclDiv.style.marginTop = '12px';
+  conclDiv.style.background = '#fffbdd';
+  conclDiv.style.padding = '10px 12px';
+  conclDiv.style.borderLeft = '4px solid #f59e0b';
+  conclDiv.innerHTML = `<strong>Conclusion / Possible Conditions:</strong><ul>${conclusion.map(c=>`<li>${c}</li>`).join('')}</ul>`;
+  el.appendChild(conclDiv);
+}
+
+      const notes = document.createElement('div');
+      notes.style.marginTop='10px';
+      notes.innerHTML = '<small>Values are indicative. Consult specialist for any abnormal result. In emergencies, contact local services.</small>';
+      el.appendChild(notes);
+    }
+
+    function collectAndCheck(){
+      const sex = document.getElementById('sex').value;
+      const name = document.getElementById('name').value;
+      const age = document.getElementById('age').value;
+      const raw = {
+  Hb: parseFloat(document.getElementById('hb').value),
+  WBC: parseFloat(document.getElementById('wbc').value),
+  PLT: parseFloat(document.getElementById('plt').value),
+  GLU: parseFloat(document.getElementById('glu').value),
+  TSH: parseFloat(document.getElementById('tsh').value),
+  LDL: parseFloat(document.getElementById('ldl').value),
+  CR: parseFloat(document.getElementById('cr').value),
+  HDL: parseFloat(document.getElementById('hdl').value),
+  TG: parseFloat(document.getElementById('tg').value),
+  Bilirubin: parseFloat(document.getElementById('bilirubin').value),
+  Urea: parseFloat(document.getElementById('urea')?.value),
+  Potassium: parseFloat(document.getElementById('potassium').value),
+  Calcium: parseFloat(document.getElementById('calcium').value),
+  VitaminD: parseFloat(document.getElementById('vitamind').value),
+  B12: parseFloat(document.getElementById('b12').value),
+  Ferritin: parseFloat(document.getElementById('ferritin').value),
+  Folate: parseFloat(document.getElementById('folate').value),
+  Magnesium: parseFloat(document.getElementById('magnesium').value),
+  CRP: parseFloat(document.getElementById('crp').value)
+};
+
+      const custom = parseCustom(document.getElementById('custom').value);
+      const report={patient:name,age,sex,timestamp:new Date().toISOString(),readings:{}};
+
+      for(const k of Object.keys(raw)){
+        const res = checkValue(k, raw[k], sex==='female'? 'female': undefined);
+        if(res) report.readings[k]=res;
+      }
+      if(custom){ report.readings[custom.key]={present:true,name:custom.key,unit:'(custom)',value:custom.val,low:'n/a',high:'n/a',status:'custom',symptoms:[],doctor:'GP'} }
+
+      renderResults(report);
+      window.__LAST_REPORT = report;
+    }
+
+    document.getElementById('check').addEventListener('click',collectAndCheck);
+    document.getElementById('clear').addEventListener('click',()=>{
+      document.querySelectorAll('input[type="number"], input[type="text"]').forEach(i=>i.value='');
+      document.getElementById('results').innerHTML='<p class="lead">No report checked yet.</p>';
+      window.__LAST_REPORT = null;
+    });
+    document.getElementById('download').addEventListener('click',()=>{
+      const r = window.__LAST_REPORT || {};
+      const blob = new Blob([JSON.stringify(r,null,2)], {type:'application/json'});
+      const url = URL.createObjectURL(blob);
+      const a=document.createElement('a');
+      a.href=url;
+      a.download=(r.patient? r.patient.replace(/\s+/g,'_')+'_report.json':'report.json');
+      document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+    });
+
+  </script>
+<!-- Add this in the <head> or before your closing </body> -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.9.179/pdf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+
+<script>
+/* ---------- Unified OCR + PDF text-extraction + auto-fill processFile ---------- */
+
+/* Configure PDF.js worker (put this before using pdfjsLib.getDocument) */
+if(window.pdfjsLib){
+  pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.9.179/pdf.worker.min.js';
+}
+
+/* Utility: compute age (years) from DOB string in common formats */
+function computeAgeFromDOB(dobStr){
+  if(!dobStr) return null;
+  const s = dobStr.replace(/\./g, '/').replace(/-/g, '/').trim();
+  const parts = s.split('/');
+  let day, month, year;
+  if(parts.length === 3){
+    if(parts[0].length === 4){
+      year = parseInt(parts[0]); month = parseInt(parts[1]); day = parseInt(parts[2]);
+    } else {
+      day = parseInt(parts[0]); month = parseInt(parts[1]); year = parseInt(parts[2]);
+      if(year < 100) year += (year > 30 ? 1900 : 2000);
+    }
+  } else {
+    const iso = s.match(/(\d{4})(\d{2})(\d{2})/);
+    if(iso){
+      year = parseInt(iso[1]); month = parseInt(iso[2]); day = parseInt(iso[3]);
+    } else return null;
+  }
+  if(!year || !month || !day) return null;
+  const dob = new Date(year, month - 1, day);
+  if(isNaN(dob)) return null;
+  const diff = Date.now() - dob.getTime();
+  const age = Math.floor(diff / (365.25 * 24 * 60 * 60 * 1000));
+  return age;
+}
+
+/* Parse OCR/text to find Name, Age, Sex (and DOB fallback for age) */
+function extractPatientInfo(ocrText){
+  const info = { name: '', age: '', sex: '' };
+  if(!ocrText || !ocrText.trim()) return info;
+
+  const text = ocrText.replace(/\r/g, '\n').replace(/\t/g,' ').replace(/\u00A0/g,' ').split('\n').map(l=>l.trim()).filter(Boolean).join('\n');
+
+  const namePatterns = [
+    /(?:Patient Name|Name of Patient|Name)\s*[:\-]\s*(.+)/i,
+    /(?:Name)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+){0,4})/m,
+    /MRN\s*[:\-]\s*(.+)/i
+  ];
+  for(const p of namePatterns){
+    const m = text.match(p);
+    if(m && m[1]){
+      let candidate = m[1].trim();
+      candidate = candidate.replace(/\s{2,}/g,' ').replace(/\b(Age|Sex|DOB|Date)\b.*$/i,'').trim();
+      if(candidate) { info.name = candidate; break; }
+    }
+  }
+
+  const ageDirect = text.match(/(?:Age|Years?|Yrs?)\s*[:\-]?\s*(\d{1,3})\b/i);
+  if(ageDirect) info.age = ageDirect[1];
+
+  if(!info.age){
+    const dobMatch = text.match(/(?:DOB|Date of Birth|D\.O\.B\.)\s*[:\-]?\s*([0-9]{1,4}[\/\-\.\s][0-9]{1,2}[\/\-\.\s][0-9]{2,4})/i);
+    if(dobMatch && dobMatch[1]){
+      const ageFromDob = computeAgeFromDOB(dobMatch[1]);
+      if(ageFromDob !== null) info.age = String(ageFromDob);
+    }
+  }
+
+  if(!info.age){
+    const dobAny = text.match(/(\d{1,2}[\/\-\.\s]\d{1,2}[\/\-\.\s]\d{2,4})/);
+    if(dobAny){
+      const ageFromDob = computeAgeFromDOB(dobAny[1]);
+      if(ageFromDob !== null) info.age = String(ageFromDob);
+    }
+  }
+
+  const sexMatch = text.match(/(?:Sex|Gender)\s*[:\-]?\s*(Male|Female|M|F|Other|Transgender|Non-binary)/i);
+  if(sexMatch && sexMatch[1]){
+    const s = sexMatch[1].toLowerCase();
+    if(s.startsWith('m')) info.sex = 'male';
+    else if(s.startsWith('f')) info.sex = 'female';
+    else info.sex = 'unspecified';
+  } else {
+    const sexShort = text.match(/\bSex[:\s]*([MF])\b/i);
+    if(sexShort){
+      const s = sexShort[1].toUpperCase();
+      info.sex = s === 'M' ? 'male' : 'female';
+    }
+  }
+
+  info.name = (info.name || '').split(/\n/)[0].trim().slice(0,80);
+  info.age = (info.age || '').trim();
+  info.sex = (info.sex || '').trim();
+
+  return info;
+}
+
+/* Utility to fill form fields */
+function fillPatientFields(info){
+  if(!info) return;
+  if(info.name) document.getElementById('name').value = info.name;
+  if(info.age) document.getElementById('age').value = info.age;
+  if(info.sex){
+    const sexVal = (info.sex.toLowerCase().startsWith('m')) ? 'male' : (info.sex.toLowerCase().startsWith('f') ? 'female' : 'unspecified');
+    const sel = document.getElementById('sex');
+    if(sel) sel.value = sexVal;
+  }
+}
+
+/* Main unified processFile function for images and PDFs */
+async function processFile() {
+  const fileInput = document.getElementById('reportFile');
+  const file = fileInput.files && fileInput.files[0];
+  const output = document.getElementById('fileOutput');
+  const status = document.getElementById('uploadStatus');
+
+  if(!file){
+    alert('Please select a file first.');
+    return;
+  }
+
+  status.innerText = 'Processing...';
+  output.innerText = '';
+
+  try {
+    let fullText = '';
+if(file.type.startsWith('image/')) {
+  const imgURL = URL.createObjectURL(file);
+  const { data } = await Tesseract.recognize(imgURL, 'eng', { logger: m => console.log(m) });
+  fullText = data.text;
+  URL.revokeObjectURL(imgURL);
+}
+
+else if(file.type === 'application/pdf') {
+  const arrayBuffer = await file.arrayBuffer();
+  const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+  fullText = '';
+  for (let i = 1; i <= pdf.numPages; i++) {
+    const page = await pdf.getPage(i);
+    const content = await page.getTextContent();
+    fullText += content.items.map(item => item.str).join(' ') + '\n';
+  }
+}
+
+else if(file.type === 'text/csv' || file.name.endsWith('.csv')) {
+    status.innerText = 'Reading CSV file...';
+    const text = await file.text();
+    fullText = text; // for display
+
+    const lines = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+
+    if(lines.length > 1){
+        const header = lines[0].split(',').map(h => h.trim().toLowerCase());
+        const data = lines[1].split(',').map(d => d.trim());
+
+        const info = {};
+        header.forEach((h, i) => {
+            const val = data[i];
+            if(!val) return;
+            if(['name','age','sex'].includes(h)) info[h] = val;
+            else {
+                const input = document.getElementById(h);
+                if(input) input.value = val;
+            }
+        });
+
+        fillPatientFields(info);
+        status.innerText = 'CSV parsed & fields auto-filled';
+    } else {
+        status.innerText = 'CSV seems empty or has no data rows.';
+    }
+}
+else {
+    alert('Unsupported file type. Please upload an image, PDF, or CSV.');
+    status.innerText = 'Unsupported file type';
+    return;
+}
+
+    output.innerText = fullText || 'No text found in file.';
+    status.innerText = 'Parsing patient info...';
+
+    const patientInfo = extractPatientInfo(fullText);
+    fillPatientFields(patientInfo);
+    status.innerText += ' | Auto-filled lab values (if found)';
+
+// ---------- Auto-fill Lab Values ----------
+const labPatterns = [
+  { key: 'hb', regex: /\b(?:Hb|Haemoglobin|Hemoglobin)\s*[:\-]?\s*([0-9]+(?:\.[0-9]+)?)\s*(?:g\/dL)?/i },
+  { key: 'wbc', regex: /\b(?:WBC|Total\s+Leucocyte\s+Count)\s*[:\-]?\s*([0-9]+(?:\.[0-9]+)?)\s*(?:\/uL|10\^9\/L)?/i },
+  { key: 'plt', regex: /\b(?:Platelets?|PLT)\s*[:\-]?\s*([0-9]+(?:\.[0-9]+)?)\s*(?:\/pL|10\^9\/L)?/i },
+  { key: 'glu', regex: /\b(?:Fasting\s+Glucose|FBS|Blood\s+Sugar)\s*[:\-]?\s*([0-9]+(?:\.[0-9]+)?)\s*(?:mg\/dL)?/i },
+  { key: 'tsh', regex: /\b(?:TSH|Thyroid\s+Stimulating\s+Hormone)\s*[:\-]?\s*([0-9]+(?:\.[0-9]+)?)\s*(?:mIU\/L|plu\/mL)?/i },
+  { key: 'ldl', regex: /\b(?:LDL|Low\s+Density\s+Lipoprotein)\s*[:\-]?\s*([0-9]+(?:\.[0-9]+)?)\s*(?:mg\/dL)?/i },
+  { key: 'hdl', regex: /\b(?:HDL|HDL\s+Cholesterol)\s*[:\-]?\s*([0-9]+(?:\.[0-9]+)?)\s*(?:mg\/dL)?/i },
+  { key: 'tg', regex: /\b(?:Triglycerides|TG)\s*[:\-]?\s*([0-9]+(?:\.[0-9]+)?)\s*(?:mg\/dL)?/i },
+  { key: 'bilirubin', regex: /\bBilirubin\s*[:\-]?\s*([0-9]+(?:\.[0-9]+)?)\s*(?:mg\/dL)?/i },
+  { key: 'cr', regex: /\b(?:Creatinine|Serum\s+Creatinine)\s*[:\-]?\s*([0-9]+(?:\.[0-9]+)?)\s*(?:mg\/dL)?/i },
+  { key: 'urea', regex: /\bUrea\s*[:\-]?\s*([0-9]+(?:\.[0-9]+)?)\s*(?:mg\/dL)?/i },
+  { key: 'potassium', regex: /\bPotassium\s*[:\-]?\s*([0-9]+(?:\.[0-9]+)?)\s*(?:mEq\/L)?/i },
+  { key: 'calcium', regex: /\bCalcium\s*[:\-]?\s*([0-9]+(?:\.[0-9]+)?)\s*(?:mg\/dL)?/i },
+  { key: 'vitamind', regex: /\bVitamin\s*D\s*[:\-]?\s*([0-9]+(?:\.[0-9]+)?)\s*(?:ng\/mL)?/i },
+  { key: 'b12', regex: /\bVitamin\s*B12\s*[:\-]?\s*([0-9]+(?:\.[0-9]+)?)\s*(?:pg\/mL)?/i },
+  { key: 'ferritin', regex: /\bFerritin\s*[:\-]?\s*([0-9]+(?:\.[0-9]+)?)\s*(?:ng\/mL)?/i },
+  { key: 'folate', regex: /\bFolate\s*[:\-]?\s*([0-9]+(?:\.[0-9]+)?)\s*(?:ng\/mL)?/i },
+  { key: 'magnesium', regex: /\bMagnesium\s*[:\-]?\s*([0-9]+(?:\.[0-9]+)?)\s*(?:mg\/dL)?/i },
+  { key: 'crp', regex: /\b(?:CRP|C-reactive\s+protein)\s*[:\-]?\s*([0-9]+(?:\.[0-9]+)?)\s*(?:mg\/L)?/i }
+];
+
+
+labPatterns.forEach(lab => {
+  const m = fullText.match(lab.regex);
+  if (m && m[1]) {
+    const val = parseFloat(m[1]);
+    if (!isNaN(val)) {
+      const input = document.getElementById(lab.key);
+      if (input) input.value = val;
+    }
+  }
+});
+
+    const found = [];
+    if(patientInfo.name) found.push(`Name: ${patientInfo.name}`);
+    if(patientInfo.age) found.push(`Age: ${patientInfo.age}`);
+    if(patientInfo.sex) found.push(`Sex: ${patientInfo.sex}`);
+    status.innerText = found.length ? `Auto-filled → ${found.join(' • ')}` : 'No patient fields found automatically. Please fill manually.';
+
+    window.__LAST_OCR_TEXT = fullText;
+    window.__LAST_PATIENT_INFO = patientInfo;
+
+  } catch(err){
+    console.error(err);
+    status.innerText = 'Error processing file: ' + (err.message || err);
+    output.innerText = (err.stack ? err.stack : String(err));
+  }
+}
+</script>
+<div class="designer-card">
+  By : The Chaotic 4
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<!-- Download PDF Button -->
+<button id="downloadPDF" style="padding:10px 20px; background-color:#0b6fff80; color:white; border:none; border-radius:5px; cursor:pointer;">
+  Download Results (PDF)
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+document.getElementById('downloadPDF').addEventListener('click', async () => {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+
+  // Use the data from your report. For example, if you store it in a variable called window.__LAST_REPORT:
+  const report = window.__LAST_REPORT; // Replace with your actual report object
+  if(!report){
+    alert('No report available to download!');
+    return;
+  }
+
+  let y = 10;
+  doc.setFontSize(14);
+  doc.text(`Health Report - ${report.patient || 'Anonymous'}`, 10, y);
+  y += 10;
+
+  doc.setFontSize(11);
+  doc.text(`Age: ${report.age || '—'} | Sex: ${report.sex || '—'}`, 10, y);
+  y += 10;
+
+  const readings = report.readings || {};
+  for(const key of Object.keys(readings)){
+    const r = readings[key];
+    if(!r.present) continue;
+
+    doc.text(`${r.name}: ${r.value} ${r.unit || ''} [${r.status}]`, 10, y);
+    y += 7;
+
+    if(r.symptoms && r.symptoms[r.status]){
+      doc.text(`Symptoms: ${r.symptoms[r.status].slice(0,3).join(', ')}`, 12, y);
+      y += 7;
+    }
+
+    doc.text(`Suggested Specialist: ${r.doctor}`, 12, y);
+    y += 10;
+
+    if(y > 270){ 
+      doc.addPage(); 
+      y = 10; 
+    }
+  }
+
+  // Add conclusion if available
+  const conclusion = report.conclusion || [];
+  if(conclusion.length){
+    doc.setFontSize(12);
+    doc.text('Conclusion / Possible Conditions:', 10, y);
+    y += 7;
+    conclusion.forEach(c => { 
+      doc.text('- ' + c, 12, y); 
+      y += 7; 
+      if(y > 270){ doc.addPage(); y = 10; }
+    });
+  }
+
+  doc.save(`${report.patient ? report.patient.replace(/\s+/g,'_')+'_report.pdf' : 'report.pdf'}`);
+});
+</script>
+
+</button>
+
+
+</body>
+</html>
