@@ -88,6 +88,10 @@ ChatGPT
 
 Gemini
 
+Perplexity
+
+Figma for UI/UX designing
+
 
 📂 Repo Structure
 
@@ -103,7 +107,7 @@ health-report-engine/
 
 │   ├── app.py
 
-│   └── analyzer.py
+│   └── 
 
 │── demo/
 
