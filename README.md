@@ -42,41 +42,41 @@
 
 1. Prototype Refinement
 
-Improving accuracy of report parsing and biomarker interpretation.
+-Improving accuracy of report parsing and biomarker interpretation.
 
-Collecting feedback from initial users (patients & doctors).
+-Collecting feedback from initial users (patients & doctors).
 
 2. Data Integration
 
-Connecting with hospitals, diagnostic labs, and EHR (Electronic Health Records).
+-Connecting with hospitals, diagnostic labs, and EHR (Electronic Health Records).
 
-Enabling automatic fetching of reports for real-time analysis.
+-Enabling automatic fetching of reports for real-time analysis.
 
 3. Personalization
 
-Adding lifestyle-based recommendations (diet, exercise, supplements).
+-Adding lifestyle-based recommendations (diet, exercise, supplements).
 
-Tailor insights based on age, gender, and medical history.
+-Tailor insights based on age, gender, and medical history.
 
 4. Predictive Analytics
 
-Using machine learning to predict potential health risks.
+-Using machine learning to predict potential health risks.
 
-Showing health trends over time instead of just one report.
+-Showing health trends over time instead of just one report.
 
 5. Compliance & Security
 
-Ensuring HIPAA/GDPR compliance for sensitive medical data.
+-Ensuring HIPAA/GDPR compliance for sensitive medical data.
 
-Strengthening data encryption and user consent management.
+-Strengthening data encryption and user consent management.
 
 6. Future Expansion
 
-Building a mobile app for instant access to reports and insights.
+-Building a mobile app for instant access to reports and insights.
 
-Integrating with wearable devices (smartwatch, fitness tracker).
+-Integrating with wearable devices (smartwatch, fitness tracker).
 
-Collaborating with healthcare providers for preventive care programs.
+-Collaborating with healthcare providers for preventive care programs.
 
 🛠️ Tech Stack
 
