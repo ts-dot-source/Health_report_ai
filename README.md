@@ -102,6 +102,7 @@ health-report-engine/
 │── data/
 
 │   └── [Sample_report.pdf](https://github.com/user-attachments/files/22450080/John_Doe_report.pdf)
+
 |   └── [Database.pdf](https://github.com/user-attachments/files/22451012/Database.pdf)
 
 │── src/
